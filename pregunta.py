@@ -14,65 +14,43 @@ import re
 
 
 def ingest_data():
-    """
-    Construye un dataframe de Pandas a partir del archivo 'clusters_report.txt'.
+
+    #
+    # Inserte su código aquí
+    #
     
-    Los nombres de las columnas están en minúsculas, reemplazando los espacios por guiones bajos.
-    Las palabras clave están separadas por coma y con un solo espacio entre palabra y palabra.
-    """
-
     with open('clusters_report.txt', 'r') as text_file:
-        lineas = text_file.readlines()[4:]  # Saltar las primeras 4 líneas
-
-
-    # Definir función para formatear títulos
-    def title_format(header):
-        return header.lower().replace(" ", "_")
-
-
-    # Inicializar lista para almacenar datos
-    data = {
-        "cluster": [],
-        "cantidad_de_palabras_clave": [],
-        "porcentaje_de_palabras_clave": [],
-        "principales_palabras_clave": []
-    }
-
-
+        df = text_file.readlines()
+        df = df[4:]
+       
+    
+    cls = []
+    
     cluster = [0, 0, 0, '']
-    for linea in lineas:
-        # Verificar si la línea comienza con un número
-        if re.match('^ +[0-9]+ +', linea):
-            number, quantity, percentage, *words = linea.split()
+    for line in df:
+        
+        if re.match('^ +[0-9]+ +', line):
+            number, quantity, percentage, *words = line.split()
             cluster[0] = int(number)
             cluster[1] = int(quantity)
-            cluster[2] = float(percentage.replace(',', '.').replace('%', ''))
+            cluster[2] = float(percentage.replace(',', '.'))
             
-            # Unir palabras clave
+            words.pop(0) #Eliminar el %
             words = ' '.join(words)
-            cluster[3] = words
+            cluster[3] += words
             
-        # Verificar si la línea comienza con una letra minúscula
-        elif re.match('^ +[a-z]', linea):
-            words = linea.split()
+        elif re.match('^ +[a-z]', line):
+            words = line.split()
             words = ' '.join(words)
             cluster[3] += ' ' + words
             
-        # Verificar si la línea está vacía
-        elif re.match('^\n', linea) or re.match('^ +$', linea):
-            # Agregar datos a la lista
-            data["cluster"].append(cluster[0])
-            data["cantidad_de_palabras_clave"].append(cluster[1])
-            data["porcentaje_de_palabras_clave"].append(cluster[2])
-            data["principales_palabras_clave"].append(cluster[3].strip())
+        elif re.match('^\n', line) or re.match('^ +$', line):
+            cluster[3] = cluster[3].replace('.', '')
+            cls.append(cluster)
             
-            # Reinicializar cluster
             cluster = [0, 0, 0, '']
-
-
-    # Construir dataframe
-    df = pd.DataFrame(data)
-    return df
+    
+    return pd.DataFrame (cls, columns = ['cluster', 'cantidad_de_palabras_clave', 'porcentaje_de_palabras_clave', 'principales_palabras_clave'])
 
 
 print(ingest_data())
